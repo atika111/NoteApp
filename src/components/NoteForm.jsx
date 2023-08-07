@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import { format } from "date-fns";
 import TextareaAutosize from "react-textarea-autosize";
 
-const NoteForm = ({style }) => {
+const NoteForm = ({ style }) => {
   const [textareaValue, setTextareaValue] = useState("");
   const [titleValue, setTitleValue] = useState("");
   const [notes, setNotes] = useState([]);
@@ -13,10 +13,9 @@ const NoteForm = ({style }) => {
   const [currNoteModal, setCurrNoteModal] = useState(null);
 
   useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem("notes"))
-    setNotes(savedNotes)
-
-  },[])
+    const savedNotes = JSON.parse(localStorage.getItem("notes")) || [];
+    setNotes(savedNotes);
+  }, []);
 
   const handleAddNote = () => {
     if (textareaValue === "") return;
@@ -28,20 +27,19 @@ const NoteForm = ({style }) => {
       createdDate: format(new Date(), "MMM d, yyyy - HH:mm"),
     };
     setNotes([...notes, newNote]);
-    const updateNote = [...notes, newNote]
     setTitleValue("");
     setTextareaValue("");
-    localStorage.setItem('notes', JSON.stringify(updateNote))
+    localStorage.setItem("notes", JSON.stringify([...notes, newNote]));
   };
 
-  const handleDealetNote = (id) => {
+  const handleDeleteNote = (id) => {
     const isConfirm = window.confirm(
       "Are you sure you want to delete your note?"
     );
     if (isConfirm) {
       const updatedNotes = notes.filter((note) => note.id !== id);
       setNotes(updatedNotes);
-      localStorage.setItem('notes', JSON.stringify(updatedNotes));
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
     }
   };
 
@@ -52,26 +50,17 @@ const NoteForm = ({style }) => {
     }
   };
 
-  const handleUpdateClick = (currNote) => {
-    if (!currNote.text) return 
-      const noteIndex = notes.findIndex(note => (
-          note.id === currNote.id
-          ))
-          const updateNote = [...notes];
-          updateNote[noteIndex] = {
-            ...updateNote[noteIndex],
-            text: currNote.text,
-            title: currNote.title,
-            updateTime: format(new Date(), "MMM d, yyyy - HH:mm")
-          };
-          setNotes(updateNote);
-          
-          setIsModalOpen(false)
-        };
+  const handleUpdateClick = (updatedNote) => {
+    if (!updatedNote.text) return;
 
-  useEffect(() => {
-    console.log(notes[0]);
-  }, [notes[0]]);
+    const updatedNotes = notes.map((note) =>
+      note.id === updatedNote.id ? { ...note, ...updatedNote } : note
+    );
+
+    setNotes(updatedNotes);
+    setIsModalOpen(false);
+    localStorage.setItem("notes", JSON.stringify(updatedNotes));
+  };
 
   return (
     <div>
@@ -91,14 +80,14 @@ const NoteForm = ({style }) => {
           rows="5"
         />
         {isModalOpen ? (
-          <button onClick={handleUpdateClick}>Update</button>
+          <button onClick={() => handleUpdateClick(currNoteModal)}>Update</button>
         ) : (
           <button onClick={handleAddNote}>Add</button>
         )}
       </div>
       <NoteList
         notes={notes}
-        handleDealetNote={handleDealetNote}
+        handleDeleteNote={handleDeleteNote}
         handleClickOpenModal={handleClickOpenModal}
       />
       <NoteModal
