@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 function NoteList({ notes, handleDeleteNote, handleClickOpenModal }) {
+  console.log('notes: ', notes);
   return (
     <div className="grid-note">
       {notes.map((note) => (
